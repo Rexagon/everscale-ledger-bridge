@@ -56,7 +56,7 @@ export default class LedgerApp {
     getAddress(account, contract, boolValidate = false) {
         const data = Buffer.alloc(8)
         data.writeUInt32BE(account, 0)
-        data.writeUInt32BE(contract, 4)
+        data.writeUint8(contract, 4)
         return this.transport
             .send(CLA, INS_GET_ADDR, boolValidate ? 0x01 : 0x00, 0x00, data, [SW_OK])
             .then((response) => {
@@ -105,8 +105,8 @@ export default class LedgerApp {
     signTransaction(account, originalWallet, wallet, message, ctx) {
         const data = Buffer.alloc(12)
         data.writeUInt32BE(account, 0)
-        data.writeUInt32BE(originalWallet, 4)
-        data.writeUInt32BE(wallet, 8)
+        data.writeUint8(originalWallet, 4)
+        data.writeUint8(wallet, 5)
 
         const decimals = Buffer.alloc(1)
         decimals.writeUInt8(parseInt(ctx.decimals, 10), 0)
@@ -119,7 +119,7 @@ export default class LedgerApp {
         }
         const ticker = Buffer.from(asset, 'utf-8')
 
-        const buffer = [data, decimals, Buffer.alloc(1, ticker.length), ticker, message]
+        const buffer = [data, decimals, Buffer.alloc(1, ticker.length), ticker, message.subarray(4)]
         const apdus = Buffer.concat(buffer)
 
         return this.transport
